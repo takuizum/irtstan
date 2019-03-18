@@ -36,7 +36,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_girtmodel");
-    reader.add_event(32, 30, "end", "model_girtmodel");
+    reader.add_event(61, 59, "end", "model_girtmodel");
     return reader;
 }
 
@@ -46,6 +46,7 @@ private:
     int N;
     int M;
     vector<vector<int> > y;
+    double D;
 public:
     model_girtmodel(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -110,6 +111,12 @@ public:
                     y[i_0__][i_1__] = vals_i__[pos__++];
                 }
             }
+            current_statement_begin__ = 7;
+            context__.validate_dims("data initialization", "D", "double", context__.to_vec());
+            D = double(0);
+            vals_r__ = context__.vals_r("D");
+            pos__ = 0;
+            D = vals_r__[pos__++];
 
             // validate, data variables
             current_statement_begin__ = 4;
@@ -117,6 +124,7 @@ public:
             current_statement_begin__ = 5;
             check_greater_or_equal(function__,"M",M,1);
             current_statement_begin__ = 6;
+            current_statement_begin__ = 7;
             // initialize data variables
 
 
@@ -125,16 +133,16 @@ public:
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 11;
+            current_statement_begin__ = 12;
             validate_non_negative_index("theta", "N", N);
             num_params_r__ += N;
-            current_statement_begin__ = 12;
+            current_statement_begin__ = 13;
             validate_non_negative_index("a", "M", M);
             num_params_r__ += M;
-            current_statement_begin__ = 13;
+            current_statement_begin__ = 14;
             validate_non_negative_index("b", "M", M);
             num_params_r__ += M;
-            current_statement_begin__ = 14;
+            current_statement_begin__ = 15;
             validate_non_negative_index("phi", "N", N);
             num_params_r__ += N;
         } catch (const std::exception& e) {
@@ -294,22 +302,22 @@ public:
 
             // model body
 
-            current_statement_begin__ = 19;
-            lp_accum__.add(lognormal_log<propto__>(a, 0, 1));
             current_statement_begin__ = 20;
-            lp_accum__.add(lognormal_log<propto__>(phi, 0, 1));
+            lp_accum__.add(cauchy_log<propto__>(a, 0, 1));
             current_statement_begin__ = 21;
-            lp_accum__.add(normal_log<propto__>(theta, 0, 1));
+            lp_accum__.add(cauchy_log<propto__>(phi, 0, 1));
             current_statement_begin__ = 22;
+            lp_accum__.add(normal_log<propto__>(theta, 0, 1));
+            current_statement_begin__ = 23;
             lp_accum__.add(normal_log<propto__>(b, 0, 3));
-            current_statement_begin__ = 25;
+            current_statement_begin__ = 26;
             for (int k = 1; k <= M; ++k) {
 
-                current_statement_begin__ = 26;
+                current_statement_begin__ = 27;
                 for (int i = 1; i <= N; ++i) {
 
-                    current_statement_begin__ = 27;
-                    lp_accum__.add(bernoulli_logit_log<propto__>(get_base1(get_base1(y,i,"y",1),k,"y",2), (((1.7 * get_base1(a,k,"a",1)) / stan::math::sqrt((1 + (pow(get_base1(phi,i,"phi",1),2) * pow(get_base1(a,k,"a",1),2))))) * (get_base1(theta,i,"theta",1) - get_base1(b,k,"b",1)))));
+                    current_statement_begin__ = 28;
+                    lp_accum__.add(bernoulli_logit_log<propto__>(get_base1(get_base1(y,i,"y",1),k,"y",2), (((D * get_base1(a,k,"a",1)) / stan::math::sqrt((1 + (pow(get_base1(phi,i,"phi",1),2) * pow(get_base1(a,k,"a",1),2))))) * (get_base1(theta,i,"theta",1) - get_base1(b,k,"b",1)))));
                 }
             }
 

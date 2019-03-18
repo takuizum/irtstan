@@ -4,15 +4,17 @@
 \alias{estGip_stan}
 \title{Bayesian GIRT model fitting}
 \usage{
-estGip_stan(y, ...)
+estGip_stan(y, infer = "MCMC", ...)
 }
 \arguments{
 \item{y}{integer matrix contains only item response. Do NOT contain subject ID and group index.}
 
-\item{...}{Arguments passe to \code{\link{rstan::sampling}}}
+\item{infer}{a method of inference. "MCMC" or "VB"}
+
+\item{...}{Arguments passe to \code{\link[rstan]{sampling}}}
 }
 \value{
-stanfit class file returned by \code{\link{rstan::sampling}}
+stanfit class file returned by \code{\link{rstan::sampling}} or \code{\link[rstan]{vb}}.
 }
 \description{
 Bayesian GIRT model fitting
