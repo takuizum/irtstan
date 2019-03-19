@@ -231,12 +231,13 @@ public:
         vals_r__ = context__.vals_r("theta");
         pos__ = 0U;
         validate_non_negative_index("theta", "N", N);
-        context__.validate_dims("initialization", "theta", "vector_d", context__.to_vec(N));
-        vector_d theta(static_cast<Eigen::VectorXd::Index>(N));
-        for (int j1__ = 0U; j1__ < N; ++j1__)
-            theta(j1__) = vals_r__[pos__++];
-        try {
-            writer__.vector_lub_unconstrain(min_scale,max_scale,theta);
+        context__.validate_dims("initialization", "theta", "double", context__.to_vec(N));
+        std::vector<double> theta(N,double(0));
+        for (int i0__ = 0U; i0__ < N; ++i0__)
+            theta[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < N; ++i0__)
+            try {
+            writer__.scalar_lub_unconstrain(min_scale,max_scale,theta[i0__]);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable theta: ") + e.what());
         }
@@ -246,12 +247,13 @@ public:
         vals_r__ = context__.vals_r("a");
         pos__ = 0U;
         validate_non_negative_index("a", "M", M);
-        context__.validate_dims("initialization", "a", "vector_d", context__.to_vec(M));
-        vector_d a(static_cast<Eigen::VectorXd::Index>(M));
-        for (int j1__ = 0U; j1__ < M; ++j1__)
-            a(j1__) = vals_r__[pos__++];
-        try {
-            writer__.vector_lb_unconstrain(0,a);
+        context__.validate_dims("initialization", "a", "double", context__.to_vec(M));
+        std::vector<double> a(M,double(0));
+        for (int i0__ = 0U; i0__ < M; ++i0__)
+            a[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < M; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(0,a[i0__]);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable a: ") + e.what());
         }
@@ -261,12 +263,13 @@ public:
         vals_r__ = context__.vals_r("b");
         pos__ = 0U;
         validate_non_negative_index("b", "M", M);
-        context__.validate_dims("initialization", "b", "vector_d", context__.to_vec(M));
-        vector_d b(static_cast<Eigen::VectorXd::Index>(M));
-        for (int j1__ = 0U; j1__ < M; ++j1__)
-            b(j1__) = vals_r__[pos__++];
-        try {
-            writer__.vector_lub_unconstrain(min_scale,max_scale,b);
+        context__.validate_dims("initialization", "b", "double", context__.to_vec(M));
+        std::vector<double> b(M,double(0));
+        for (int i0__ = 0U; i0__ < M; ++i0__)
+            b[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < M; ++i0__)
+            try {
+            writer__.scalar_lub_unconstrain(min_scale,max_scale,b[i0__]);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable b: ") + e.what());
         }
@@ -304,26 +307,35 @@ public:
             // model parameters
             stan::io::reader<local_scalar_t__> in__(params_r__,params_i__);
 
-            Eigen::Matrix<local_scalar_t__,Eigen::Dynamic,1>  theta;
-            (void) theta;  // dummy to suppress unused var warning
-            if (jacobian__)
-                theta = in__.vector_lub_constrain(min_scale,max_scale,N,lp__);
-            else
-                theta = in__.vector_lub_constrain(min_scale,max_scale,N);
+            vector<local_scalar_t__> theta;
+            size_t dim_theta_0__ = N;
+            theta.reserve(dim_theta_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_theta_0__; ++k_0__) {
+                if (jacobian__)
+                    theta.push_back(in__.scalar_lub_constrain(min_scale,max_scale,lp__));
+                else
+                    theta.push_back(in__.scalar_lub_constrain(min_scale,max_scale));
+            }
 
-            Eigen::Matrix<local_scalar_t__,Eigen::Dynamic,1>  a;
-            (void) a;  // dummy to suppress unused var warning
-            if (jacobian__)
-                a = in__.vector_lb_constrain(0,M,lp__);
-            else
-                a = in__.vector_lb_constrain(0,M);
+            vector<local_scalar_t__> a;
+            size_t dim_a_0__ = M;
+            a.reserve(dim_a_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_a_0__; ++k_0__) {
+                if (jacobian__)
+                    a.push_back(in__.scalar_lb_constrain(0,lp__));
+                else
+                    a.push_back(in__.scalar_lb_constrain(0));
+            }
 
-            Eigen::Matrix<local_scalar_t__,Eigen::Dynamic,1>  b;
-            (void) b;  // dummy to suppress unused var warning
-            if (jacobian__)
-                b = in__.vector_lub_constrain(min_scale,max_scale,M,lp__);
-            else
-                b = in__.vector_lub_constrain(min_scale,max_scale,M);
+            vector<local_scalar_t__> b;
+            size_t dim_b_0__ = M;
+            b.reserve(dim_b_0__);
+            for (size_t k_0__ = 0; k_0__ < dim_b_0__; ++k_0__) {
+                if (jacobian__)
+                    b.push_back(in__.scalar_lub_constrain(min_scale,max_scale,lp__));
+                else
+                    b.push_back(in__.scalar_lub_constrain(min_scale,max_scale));
+            }
 
 
             // transformed parameters
@@ -344,10 +356,10 @@ public:
             current_statement_begin__ = 31;
             lp_accum__.add(normal_log<propto__>(theta, mu_th, sigma_th));
             current_statement_begin__ = 33;
-            for (int k = 1; k <= M; ++k) {
+            for (int i = 1; i <= N; ++i) {
 
                 current_statement_begin__ = 34;
-                for (int i = 1; i <= N; ++i) {
+                for (int k = 1; k <= M; ++k) {
 
                     current_statement_begin__ = 35;
                     if (as_bool(logical_eq(get_base1(get_base1(y,i,"y",1),k,"y",2),-(1)))) {
@@ -419,9 +431,21 @@ public:
         static const char* function__ = "model_irt2plm_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
-        vector_d theta = in__.vector_lub_constrain(min_scale,max_scale,N);
-        vector_d a = in__.vector_lb_constrain(0,M);
-        vector_d b = in__.vector_lub_constrain(min_scale,max_scale,M);
+        vector<double> theta;
+        size_t dim_theta_0__ = N;
+        for (size_t k_0__ = 0; k_0__ < dim_theta_0__; ++k_0__) {
+            theta.push_back(in__.scalar_lub_constrain(min_scale,max_scale));
+        }
+        vector<double> a;
+        size_t dim_a_0__ = M;
+        for (size_t k_0__ = 0; k_0__ < dim_a_0__; ++k_0__) {
+            a.push_back(in__.scalar_lb_constrain(0));
+        }
+        vector<double> b;
+        size_t dim_b_0__ = M;
+        for (size_t k_0__ = 0; k_0__ < dim_b_0__; ++k_0__) {
+            b.push_back(in__.scalar_lub_constrain(min_scale,max_scale));
+        }
             for (int k_0__ = 0; k_0__ < N; ++k_0__) {
             vars__.push_back(theta[k_0__]);
             }

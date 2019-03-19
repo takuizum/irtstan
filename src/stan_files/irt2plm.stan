@@ -17,9 +17,9 @@ data {
 
 parameters{
 
-  vector<lower = min_scale, upper = max_scale> [N] theta;
-  vector<lower = 0>[M] a;
-  vector<lower = min_scale, upper = max_scale>[M] b;
+  real<lower = min_scale, upper = max_scale> theta [N];
+  real<lower = 0> a [M];
+  real<lower = min_scale, upper = max_scale> b [M];
 
 }
 
@@ -30,8 +30,8 @@ model{
   b ~ normal(mu_b, sigma_b);
   theta ~ normal(mu_th, sigma_th);
 
-  for(k in 1:M){
-    for(i in 1:N){
+  for(i in 1:N){
+    for(k in 1:M){
       if(y[i,k] == -1) continue;
       y[i,k] ~ bernoulli_logit(D * a[k] * (theta[i] - b[k]));
     }
